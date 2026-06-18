@@ -61,21 +61,30 @@ def generate_schedule(class_id=None, days=10):
 def check_schedule_risk(session_data):
     check_date_str = session_data.get("date")
     if not check_date_str:
-        return {"has_risk": False, "warnings": []}
+        return {"has_risk": False, "warnings": [], "warnings_detail": []}
 
     try:
         check_date_val = date.fromisoformat(check_date_str)
     except ValueError:
-        return {"has_risk": True, "warnings": ["日期格式无效"]}
+        return {
+            "has_risk": True,
+            "warnings": ["日期格式无效"],
+            "warnings_detail": [{"type": "invalid_date", "message": "日期格式无效"}],
+        }
 
     warnings = []
+    warnings_detail = []
     day_off_info = store.get_day_off_info(check_date_val)
 
     for info in day_off_info:
         if info["type"] == "holiday":
-            warnings.append(f"该日期是节假日：{info['name']}")
+            msg = f"该日期是节假日：{info['name']}"
+            warnings.append(msg)
+            warnings_detail.append({"type": "holiday", "message": msg, "name": info["name"]})
         elif info["type"] == "rest_day":
-            warnings.append(f"该日期是校区休息日：{info['name']}")
+            msg = f"该日期是校区休息日：{info['name']}"
+            warnings.append(msg)
+            warnings_detail.append({"type": "rest_day", "message": msg, "name": info["name"]})
 
     existing = [
         s for s in store.schedule
@@ -85,11 +94,14 @@ def check_schedule_risk(session_data):
         and s.get("id") != session_data.get("id")
     ]
     if existing:
-        warnings.append("该时段该教室已有课程安排")
+        msg = "该时段该教室已有课程安排"
+        warnings.append(msg)
+        warnings_detail.append({"type": "conflict", "message": msg})
 
     return {
         "has_risk": len(warnings) > 0,
         "warnings": warnings,
+        "warnings_detail": warnings_detail,
         "day_off_info": day_off_info,
     }
 

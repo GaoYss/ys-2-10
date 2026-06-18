@@ -1,4 +1,4 @@
-import { CalendarPlus, Edit3, Plus, Trash2, X, AlertTriangle } from "lucide-react";
+import { CalendarPlus, Edit3, Plus, Trash2, X, AlertTriangle, CalendarX, AlertCircle } from "lucide-react";
 import { useState, useEffect } from "react";
 import { SectionHeader } from "../../components/SectionHeader";
 import { api } from "../../services/api";
@@ -343,9 +343,25 @@ export function ScheduleBoard({
             <h3>排课风险确认</h3>
             <p>以下问题可能影响课程安排：</p>
             <ul className="risk-list">
-              {pendingAction?.risk?.warnings?.map((warning, index) => (
-                <li key={index}>{warning}</li>
-              ))}
+              {pendingAction?.risk?.warnings_detail?.length > 0 ? (
+                pendingAction.risk.warnings_detail.map((item, index) => (
+                  <li
+                    key={index}
+                    className={`risk-item risk-type-${item.type}`}
+                  >
+                    {item.type === "holiday" || item.type === "rest_day" ? (
+                      <CalendarX size={16} />
+                    ) : (
+                      <AlertCircle size={16} />
+                    )}
+                    <span>{item.message}</span>
+                  </li>
+                ))
+              ) : (
+                pendingAction?.risk?.warnings?.map((warning, index) => (
+                  <li key={index}>{warning}</li>
+                ))
+              )}
             </ul>
             <p className="risk-note">
               确认要继续排课吗？此操作将覆盖以上限制。

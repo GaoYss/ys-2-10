@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { CalendarPlus, Edit3, Trash2, X } from "lucide-react";
+import { AlertCircle, CalendarPlus, Edit3, Trash2, X } from "lucide-react";
 import { SectionHeader } from "../../components/SectionHeader";
 
 const WEEKDAYS = [
@@ -28,9 +28,13 @@ export function CalendarManager({
   const [editingHoliday, setEditingHoliday] = useState(null);
   const [editDate, setEditDate] = useState("");
   const [editName, setEditName] = useState("");
+  const [holidayFormError, setHolidayFormError] = useState("");
+  const [editFormError, setEditFormError] = useState("");
+  const [restDayFormError, setRestDayFormError] = useState("");
 
   async function handleAddHoliday(event) {
     event.preventDefault();
+    setHolidayFormError("");
     if (!holidayDate || !holidayName) return;
 
     try {
@@ -42,10 +46,10 @@ export function CalendarManager({
       setHolidayDate("");
       setHolidayName("");
     } catch (err) {
-      if (err.status === 409 && err.data?.error) {
-        alert(err.data.error);
+      if (err.data?.error) {
+        setHolidayFormError(err.data.error);
       } else {
-        alert("添加失败，请重试");
+        setHolidayFormError("添加失败，请重试");
       }
     }
   }
@@ -54,16 +58,19 @@ export function CalendarManager({
     setEditingHoliday(holiday);
     setEditDate(holiday.date);
     setEditName(holiday.name);
+    setEditFormError("");
   }
 
   function closeEditHoliday() {
     setEditingHoliday(null);
     setEditDate("");
     setEditName("");
+    setEditFormError("");
   }
 
   async function handleSaveEdit(event) {
     event.preventDefault();
+    setEditFormError("");
     if (!editingHoliday || !editDate || !editName) return;
 
     try {
@@ -74,16 +81,17 @@ export function CalendarManager({
       });
       closeEditHoliday();
     } catch (err) {
-      if (err.status === 409 && err.data?.error) {
-        alert(err.data.error);
+      if (err.data?.error) {
+        setEditFormError(err.data.error);
       } else {
-        alert("保存失败，请重试");
+        setEditFormError("保存失败，请重试");
       }
     }
   }
 
   async function handleAddRestDay(event) {
     event.preventDefault();
+    setRestDayFormError("");
     if (restDayOfWeek === "" || !restDayName) return;
 
     try {
@@ -95,9 +103,9 @@ export function CalendarManager({
       setRestDayName("");
     } catch (err) {
       if (err.data?.error) {
-        alert(err.data.error);
+        setRestDayFormError(err.data.error);
       } else {
-        alert("添加失败，请重试");
+        setRestDayFormError("添加失败，请重试");
       }
     }
   }
@@ -120,21 +128,33 @@ export function CalendarManager({
               </button>
             </div>
             <form className="form-grid" onSubmit={handleSaveEdit}>
-              <label>
+              <label className="field-with-error">
                 日期
                 <input
                   type="date"
                   value={editDate}
-                  onChange={(e) => setEditDate(e.target.value)}
+                  onChange={(e) => {
+                    setEditDate(e.target.value);
+                    setEditFormError("");
+                  }}
                   required
                 />
+                {editFormError && (
+                  <span className="field-error">
+                    <AlertCircle size={14} />
+                    {editFormError}
+                  </span>
+                )}
               </label>
               <label>
                 节假日名称
                 <input
                   type="text"
                   value={editName}
-                  onChange={(e) => setEditName(e.target.value)}
+                  onChange={(e) => {
+                    setEditName(e.target.value);
+                    setEditFormError("");
+                  }}
                   required
                 />
               </label>
@@ -158,13 +178,22 @@ export function CalendarManager({
       <div className="table-panel">
         <SectionHeader eyebrow="Holidays" title="法定节假日" />
         <form className="toolbar-panel" onSubmit={handleAddHoliday}>
-          <label>
+          <label className="field-with-error">
             日期
             <input
               type="date"
               value={holidayDate}
-              onChange={(e) => setHolidayDate(e.target.value)}
+              onChange={(e) => {
+                setHolidayDate(e.target.value);
+                setHolidayFormError("");
+              }}
             />
+            {holidayFormError && (
+              <span className="field-error">
+                <AlertCircle size={14} />
+                {holidayFormError}
+              </span>
+            )}
           </label>
           <label>
             节假日名称
@@ -172,7 +201,10 @@ export function CalendarManager({
               type="text"
               placeholder="如：元旦、春节"
               value={holidayName}
-              onChange={(e) => setHolidayName(e.target.value)}
+              onChange={(e) => {
+                setHolidayName(e.target.value);
+                setHolidayFormError("");
+              }}
             />
           </label>
           <button className="primary-action" type="submit">
@@ -216,11 +248,14 @@ export function CalendarManager({
       <div className="table-panel">
         <SectionHeader eyebrow="Rest Days" title="校区每周休息日" />
         <form className="toolbar-panel" onSubmit={handleAddRestDay}>
-          <label>
+          <label className="field-with-error">
             星期
             <select
               value={restDayOfWeek}
-              onChange={(e) => setRestDayOfWeek(e.target.value)}
+              onChange={(e) => {
+                setRestDayOfWeek(e.target.value);
+                setRestDayFormError("");
+              }}
             >
               <option value="">请选择星期</option>
               {WEEKDAYS.map((day) => (
@@ -229,6 +264,12 @@ export function CalendarManager({
                 </option>
               ))}
             </select>
+            {restDayFormError && (
+              <span className="field-error">
+                <AlertCircle size={14} />
+                {restDayFormError}
+              </span>
+            )}
           </label>
           <label>
             说明
@@ -236,7 +277,10 @@ export function CalendarManager({
               type="text"
               placeholder="如：周日休息"
               value={restDayName}
-              onChange={(e) => setRestDayName(e.target.value)}
+              onChange={(e) => {
+                setRestDayName(e.target.value);
+                setRestDayFormError("");
+              }}
             />
           </label>
           <button className="primary-action" type="submit">
