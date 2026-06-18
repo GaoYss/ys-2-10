@@ -121,7 +121,11 @@ export function ScheduleBoard({
     };
 
     if (riskCheck?.has_risk) {
-      setPendingAction({ type: editingSession ? "update" : "create", payload });
+      setPendingAction({
+        type: editingSession ? "update" : "create",
+        payload,
+        risk: riskCheck,
+      });
       setShowRiskDialog(true);
       return;
     }
@@ -339,29 +343,12 @@ export function ScheduleBoard({
             <h3>排课风险确认</h3>
             <p>以下问题可能影响课程安排：</p>
             <ul className="risk-list">
-              {pendingAction?.payload &&
-                (() => {
-                  const status = getDateStatus(pendingAction.payload.date);
-                  const items = [];
-                  if (status.isHoliday) {
-                    items.push(
-                      <li key="holiday" className="risk-holiday">
-                        该日期是节假日：<strong>{status.holidayName}</strong>
-                      </li>
-                    );
-                  }
-                  if (status.isRestDay) {
-                    items.push(
-                      <li key="rest" className="risk-rest">
-                        该日期是校区休息日：<strong>{status.restDayName}</strong>
-                      </li>
-                    );
-                  }
-                  return items;
-                })()}
+              {pendingAction?.risk?.warnings?.map((warning, index) => (
+                <li key={index}>{warning}</li>
+              ))}
             </ul>
             <p className="risk-note">
-              确认要在该日期排课吗？此操作将覆盖节假日和休息日设置。
+              确认要继续排课吗？此操作将覆盖以上限制。
             </p>
             <div className="form-actions">
               <button

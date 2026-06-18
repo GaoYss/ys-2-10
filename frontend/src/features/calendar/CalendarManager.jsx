@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { CalendarPlus, Trash2 } from "lucide-react";
+import { CalendarPlus, Edit3, Trash2, X } from "lucide-react";
 import { SectionHeader } from "../../components/SectionHeader";
 
 const WEEKDAYS = [
@@ -16,6 +16,7 @@ export function CalendarManager({
   holidays,
   restDays,
   onCreateHoliday,
+  onUpdateHoliday,
   onDeleteHoliday,
   onCreateRestDay,
   onDeleteRestDay,
@@ -24,38 +25,136 @@ export function CalendarManager({
   const [holidayName, setHolidayName] = useState("");
   const [restDayOfWeek, setRestDayOfWeek] = useState("");
   const [restDayName, setRestDayName] = useState("");
+  const [editingHoliday, setEditingHoliday] = useState(null);
+  const [editDate, setEditDate] = useState("");
+  const [editName, setEditName] = useState("");
 
   async function handleAddHoliday(event) {
     event.preventDefault();
     if (!holidayDate || !holidayName) return;
 
-    await onCreateHoliday({
-      date: holidayDate,
-      name: holidayName,
-      type: "holiday",
-    });
+    try {
+      await onCreateHoliday({
+        date: holidayDate,
+        name: holidayName,
+        type: "holiday",
+      });
+      setHolidayDate("");
+      setHolidayName("");
+    } catch (err) {
+      if (err.status === 409 && err.data?.error) {
+        alert(err.data.error);
+      } else {
+        alert("添加失败，请重试");
+      }
+    }
+  }
 
-    setHolidayDate("");
-    setHolidayName("");
+  function openEditHoliday(holiday) {
+    setEditingHoliday(holiday);
+    setEditDate(holiday.date);
+    setEditName(holiday.name);
+  }
+
+  function closeEditHoliday() {
+    setEditingHoliday(null);
+    setEditDate("");
+    setEditName("");
+  }
+
+  async function handleSaveEdit(event) {
+    event.preventDefault();
+    if (!editingHoliday || !editDate || !editName) return;
+
+    try {
+      await onUpdateHoliday(editingHoliday.id, {
+        date: editDate,
+        name: editName,
+        type: editingHoliday.type || "holiday",
+      });
+      closeEditHoliday();
+    } catch (err) {
+      if (err.status === 409 && err.data?.error) {
+        alert(err.data.error);
+      } else {
+        alert("保存失败，请重试");
+      }
+    }
   }
 
   async function handleAddRestDay(event) {
     event.preventDefault();
     if (restDayOfWeek === "" || !restDayName) return;
 
-    await onCreateRestDay({
-      day_of_week: parseInt(restDayOfWeek, 10),
-      name: restDayName,
-    });
-
-    setRestDayOfWeek("");
-    setRestDayName("");
+    try {
+      await onCreateRestDay({
+        day_of_week: parseInt(restDayOfWeek, 10),
+        name: restDayName,
+      });
+      setRestDayOfWeek("");
+      setRestDayName("");
+    } catch (err) {
+      if (err.data?.error) {
+        alert(err.data.error);
+      } else {
+        alert("添加失败，请重试");
+      }
+    }
   }
 
   const sortedHolidays = [...holidays].sort((a, b) => a.date.localeCompare(b.date));
 
   return (
     <section className="module">
+      {editingHoliday && (
+        <div className="modal-overlay" onClick={closeEditHoliday}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>编辑节假日</h3>
+              <button
+                className="icon-button"
+                type="button"
+                onClick={closeEditHoliday}
+              >
+                <X size={20} />
+              </button>
+            </div>
+            <form className="form-grid" onSubmit={handleSaveEdit}>
+              <label>
+                日期
+                <input
+                  type="date"
+                  value={editDate}
+                  onChange={(e) => setEditDate(e.target.value)}
+                  required
+                />
+              </label>
+              <label>
+                节假日名称
+                <input
+                  type="text"
+                  value={editName}
+                  onChange={(e) => setEditName(e.target.value)}
+                  required
+                />
+              </label>
+              <div className="form-actions">
+                <button
+                  type="button"
+                  className="secondary-action"
+                  onClick={closeEditHoliday}
+                >
+                  取消
+                </button>
+                <button type="submit" className="primary-action">
+                  保存修改
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
       <div className="table-panel">
         <SectionHeader eyebrow="Holidays" title="法定节假日" />
         <form className="toolbar-panel" onSubmit={handleAddHoliday}>
@@ -91,6 +190,14 @@ export function CalendarManager({
                 <span>{holiday.date}</span>
                 <h3>{holiday.name}</h3>
                 <div className="card-actions">
+                  <button
+                    className="secondary-action"
+                    onClick={() => openEditHoliday(holiday)}
+                    type="button"
+                  >
+                    <Edit3 size={14} />
+                    编辑
+                  </button>
                   <button
                     className="danger-action"
                     onClick={() => onDeleteHoliday(holiday.id)}

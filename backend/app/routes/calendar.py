@@ -18,6 +18,13 @@ def create_holiday():
     if not payload.get("date") or not payload.get("name"):
         return jsonify({"error": "日期和名称不能为空"}), 400
 
+    existing = next((h for h in store.holidays if h["date"] == payload["date"]), None)
+    if existing:
+        return jsonify({
+            "error": f"该日期 {payload['date']} 已有节假日安排：{existing['name']}",
+            "existing": existing,
+        }), 409
+
     holiday = {
         "id": store.next_id("holidays"),
         "date": payload["date"],
@@ -35,7 +42,16 @@ def update_holiday(holiday_id):
     if not holiday:
         return jsonify({"error": "节假日不存在"}), 404
 
-    holiday["date"] = payload.get("date", holiday["date"])
+    new_date = payload.get("date", holiday["date"])
+    if new_date != holiday["date"]:
+        existing = next((h for h in store.holidays if h["date"] == new_date), None)
+        if existing:
+            return jsonify({
+                "error": f"该日期 {new_date} 已有节假日安排：{existing['name']}",
+                "existing": existing,
+            }), 409
+
+    holiday["date"] = new_date
     holiday["name"] = payload.get("name", holiday["name"])
     holiday["type"] = payload.get("type", holiday.get("type", "holiday"))
     return jsonify(holiday)

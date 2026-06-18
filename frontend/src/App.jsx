@@ -123,6 +123,11 @@ export default function App() {
     await refreshAll();
   }
 
+  async function handleUpdateHoliday(holidayId, payload) {
+    await api.updateHoliday(holidayId, payload);
+    await refreshAll();
+  }
+
   async function handleDeleteHoliday(holidayId) {
     await api.deleteHoliday(holidayId);
     await refreshAll();
@@ -213,6 +218,7 @@ export default function App() {
                 holidays={holidays}
                 restDays={restDays}
                 onCreateHoliday={handleCreateHoliday}
+                onUpdateHoliday={handleUpdateHoliday}
                 onDeleteHoliday={handleDeleteHoliday}
                 onCreateRestDay={handleCreateRestDay}
                 onDeleteRestDay={handleDeleteRestDay}
