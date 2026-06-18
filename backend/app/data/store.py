@@ -55,10 +55,44 @@ class TrainingStore:
             {"id": 2, "session_id": 1, "student_id": 2, "status": "late"},
             {"id": 3, "session_id": 1, "student_id": 3, "status": "absent"},
         ]
+        self.holidays = [
+            {"id": 1, "date": "2026-01-01", "name": "元旦", "type": "holiday"},
+            {"id": 2, "date": "2026-02-16", "name": "春节", "type": "holiday"},
+            {"id": 3, "date": "2026-02-17", "name": "春节", "type": "holiday"},
+            {"id": 4, "date": "2026-04-06", "name": "清明节", "type": "holiday"},
+            {"id": 5, "date": "2026-05-01", "name": "劳动节", "type": "holiday"},
+            {"id": 6, "date": "2026-10-01", "name": "国庆节", "type": "holiday"},
+            {"id": 7, "date": "2026-10-02", "name": "国庆节", "type": "holiday"},
+            {"id": 8, "date": "2026-10-03", "name": "国庆节", "type": "holiday"},
+        ]
+        self.rest_days = [
+            {"id": 1, "day_of_week": 6, "name": "周日"},
+            {"id": 2, "day_of_week": 0, "name": "周一"},
+        ]
 
     def next_id(self, collection):
         values = getattr(self, collection)
         return max([item["id"] for item in values], default=0) + 1
+
+    def is_holiday(self, check_date):
+        date_str = str(check_date)
+        return any(h["date"] == date_str for h in self.holidays)
+
+    def is_rest_day(self, check_date):
+        day_of_week = check_date.weekday()
+        return any(r["day_of_week"] == day_of_week for r in self.rest_days)
+
+    def get_day_off_info(self, check_date):
+        date_str = str(check_date)
+        day_of_week = check_date.weekday()
+        info = []
+        for h in self.holidays:
+            if h["date"] == date_str:
+                info.append({"type": "holiday", "name": h["name"]})
+        for r in self.rest_days:
+            if r["day_of_week"] == day_of_week:
+                info.append({"type": "rest_day", "name": r["name"]})
+        return info
 
     def snapshot(self):
         return deepcopy(
@@ -67,6 +101,8 @@ class TrainingStore:
                 "courses": self.courses,
                 "schedule": self.schedule,
                 "attendance": self.attendance,
+                "holidays": self.holidays,
+                "rest_days": self.rest_days,
             }
         )
 

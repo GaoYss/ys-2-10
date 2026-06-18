@@ -10,7 +10,11 @@ async function request(path, options = {}) {
   });
 
   if (!response.ok) {
-    throw new Error(`API request failed: ${response.status}`);
+    const errorBody = await response.json().catch(() => ({}));
+    const error = new Error(`API request failed: ${response.status}`);
+    error.status = response.status;
+    error.data = errorBody;
+    throw error;
   }
 
   return response.json();
@@ -32,6 +36,45 @@ export const api = {
       method: "POST",
       body: JSON.stringify(payload),
     }),
+  createSchedule: (payload) =>
+    request("/schedule", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }),
+  updateSchedule: (sessionId, payload) =>
+    request(`/schedule/${sessionId}`, {
+      method: "PUT",
+      body: JSON.stringify(payload),
+    }),
+  deleteSchedule: (sessionId) =>
+    request(`/schedule/${sessionId}`, { method: "DELETE" }),
+  checkScheduleRisk: (payload) =>
+    request("/schedule/check-risk", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }),
+  getHolidays: () => request("/calendar/holidays"),
+  createHoliday: (payload) =>
+    request("/calendar/holidays", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }),
+  updateHoliday: (holidayId, payload) =>
+    request(`/calendar/holidays/${holidayId}`, {
+      method: "PUT",
+      body: JSON.stringify(payload),
+    }),
+  deleteHoliday: (holidayId) =>
+    request(`/calendar/holidays/${holidayId}`, { method: "DELETE" }),
+  getRestDays: () => request("/calendar/rest-days"),
+  createRestDay: (payload) =>
+    request("/calendar/rest-days", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }),
+  deleteRestDay: (restDayId) =>
+    request(`/calendar/rest-days/${restDayId}`, { method: "DELETE" }),
+  checkDate: (dateStr) => request(`/calendar/check/${dateStr}`),
   getAttendance: () => request("/attendance"),
   recordAttendance: (payload) =>
     request("/attendance", { method: "POST", body: JSON.stringify(payload) }),

@@ -313,6 +313,219 @@ td small {
   border-color: #ffb8ae;
 }
 
+.schedule-card.day-off {
+  border-left-color: #b42318;
+  background: #fff5f5;
+}
+
+.schedule-card.holiday {
+  border-left-color: #dc2626;
+  background: #fff5f5;
+}
+
+.schedule-card.rest-day {
+  border-left-color: #ea580c;
+  background: #fff7ed;
+}
+
+.day-off-badge {
+  display: inline-block;
+  background: #dc2626;
+  color: #fff;
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  margin-left: 8px;
+  font-weight: 600;
+}
+
+.session-date {
+  display: flex;
+  align-items: center;
+  color: #69777c;
+  font-size: 12px;
+}
+
+.card-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.danger-action {
+  align-items: center;
+  background: #fff;
+  border: 1px solid #ffb8ae;
+  border-radius: 8px;
+  color: #b42318;
+  display: inline-flex;
+  gap: 6px;
+  justify-content: center;
+  min-height: 32px;
+  padding: 6px 10px;
+  font-size: 12px;
+}
+
+.danger-action:hover {
+  background: #ffe9e7;
+}
+
+.primary-action.danger {
+  background: #b42318;
+  border-color: #b42318;
+}
+
+.primary-action.danger:hover {
+  background: #922014;
+}
+
+.primary-action.risk {
+  background: #dc2626;
+  border-color: #dc2626;
+}
+
+.icon-button {
+  background: transparent;
+  border: none;
+  color: #69777c;
+  padding: 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+}
+
+.icon-button:hover {
+  background: #eef3f5;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(18, 51, 58, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.modal-content {
+  background: #fff;
+  border-radius: 12px;
+  max-width: 560px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(18, 51, 58, 0.3);
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px;
+  border-bottom: 1px solid #e4ecee;
+}
+
+.modal-header h3 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 0 20px 20px;
+  grid-column: 1 / -1;
+}
+
+.risk-warning {
+  display: flex;
+  gap: 12px;
+  padding: 16px;
+  margin: 16px 20px;
+  background: #fff5f5;
+  border: 1px solid #ffb8ae;
+  border-radius: 8px;
+  color: #b42318;
+}
+
+.risk-warning strong {
+  display: block;
+  margin-bottom: 4px;
+}
+
+.risk-warning ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.risk-dialog {
+  max-width: 480px;
+  text-align: center;
+  padding: 32px 24px 24px;
+}
+
+.risk-dialog .risk-icon {
+  color: #dc2626;
+  margin-bottom: 16px;
+}
+
+.risk-dialog h3 {
+  margin: 0 0 12px;
+  font-size: 20px;
+  color: #12333a;
+}
+
+.risk-dialog p {
+  color: #52646b;
+  margin: 0 0 16px;
+}
+
+.risk-list {
+  text-align: left;
+  background: #fff5f5;
+  border: 1px solid #ffb8ae;
+  border-radius: 8px;
+  padding: 16px 16px 16px 36px;
+  margin: 16px 0;
+}
+
+.risk-list li {
+  margin-bottom: 8px;
+  color: #b42318;
+}
+
+.risk-list li:last-child {
+  margin-bottom: 0;
+}
+
+.risk-note {
+  font-weight: 600;
+  color: #12333a !important;
+  margin-top: 16px !important;
+}
+
+.legend-info {
+  display: grid;
+  gap: 12px;
+}
+
+.legend-info p {
+  margin: 0;
+  color: #415158;
+  line-height: 1.6;
+}
+
+.legend-info strong {
+  color: #12333a;
+}
+
 @media (max-width: 900px) {
   .app-shell,
   .two-column,
@@ -333,5 +546,9 @@ td small {
   .topbar {
     align-items: flex-start;
     flex-direction: column;
+  }
+
+  .toolbar-panel {
+    grid-template-columns: 1fr;
   }
 }

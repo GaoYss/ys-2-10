@@ -1,14 +1,16 @@
 import { useEffect, useMemo, useState } from "react";
-import { CalendarDays, ClipboardCheck, GraduationCap, Users } from "lucide-react";
+import { Calendar, CalendarDays, ClipboardCheck, GraduationCap, Users } from "lucide-react";
 import { api } from "./services/api";
 import { ClassManager } from "./features/classes/ClassManager";
 import { ScheduleBoard } from "./features/schedule/ScheduleBoard";
 import { AttendancePanel } from "./features/attendance/AttendancePanel";
 import { HourStats } from "./features/stats/HourStats";
+import { CalendarManager } from "./features/calendar/CalendarManager";
 
 const tabs = [
   { id: "classes", label: "班级管理", icon: Users },
   { id: "schedule", label: "课程表", icon: CalendarDays },
+  { id: "calendar", label: "节假日日历", icon: Calendar },
   { id: "attendance", label: "学员考勤", icon: ClipboardCheck },
   { id: "stats", label: "课时统计", icon: GraduationCap },
 ];
@@ -20,6 +22,8 @@ export default function App() {
   const [schedule, setSchedule] = useState([]);
   const [attendance, setAttendance] = useState([]);
   const [stats, setStats] = useState([]);
+  const [holidays, setHolidays] = useState([]);
+  const [restDays, setRestDays] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -35,19 +39,23 @@ export default function App() {
 
   async function refreshAll() {
     setError("");
-    const [classData, courseData, scheduleData, attendanceData, statsData] =
+    const [classData, courseData, scheduleData, attendanceData, statsData, holidayData, restDayData] =
       await Promise.all([
         api.getClasses(),
         api.getCourses(),
         api.getSchedule(),
         api.getAttendance(),
         api.getHourStats(),
+        api.getHolidays(),
+        api.getRestDays(),
       ]);
     setClasses(classData);
     setCourses(courseData);
     setSchedule(scheduleData);
     setAttendance(attendanceData);
     setStats(statsData);
+    setHolidays(holidayData);
+    setRestDays(restDayData);
   }
 
   useEffect(() => {
@@ -67,12 +75,66 @@ export default function App() {
   }
 
   async function handleGenerateSchedule(payload) {
-    await api.generateSchedule(payload);
+    const result = await api.generateSchedule(payload);
+    if (result.skipped && result.skipped.length > 0) {
+      const skippedNames = result.skipped
+        .map(s => `${s.date} (${s.day_off_info.map(i => i.name).join(", ")})`)
+        .join("\n");
+      alert(`已自动跳过以下休息日：\n${skippedNames}`);
+    }
+    await refreshAll();
+    return result;
+  }
+
+  async function handleCreateSchedule(payload) {
+    try {
+      return await api.createSchedule(payload);
+    } catch (err) {
+      if (err.status === 409) {
+        return err.data;
+      }
+      throw err;
+    }
+  }
+
+  async function handleUpdateSchedule(sessionId, payload) {
+    try {
+      return await api.updateSchedule(sessionId, payload);
+    } catch (err) {
+      if (err.status === 409) {
+        return err.data;
+      }
+      throw err;
+    }
+  }
+
+  async function handleDeleteSchedule(sessionId) {
+    await api.deleteSchedule(sessionId);
     await refreshAll();
   }
 
   async function handleRecordAttendance(payload) {
     await api.recordAttendance(payload);
+    await refreshAll();
+  }
+
+  async function handleCreateHoliday(payload) {
+    await api.createHoliday(payload);
+    await refreshAll();
+  }
+
+  async function handleDeleteHoliday(holidayId) {
+    await api.deleteHoliday(holidayId);
+    await refreshAll();
+  }
+
+  async function handleCreateRestDay(payload) {
+    await api.createRestDay(payload);
+    await refreshAll();
+  }
+
+  async function handleDeleteRestDay(restDayId) {
+    await api.deleteRestDay(restDayId);
     await refreshAll();
   }
 
@@ -137,7 +199,23 @@ export default function App() {
                 classes={classes}
                 courses={courses}
                 schedule={schedule}
+                holidays={holidays}
+                restDays={restDays}
                 onGenerate={handleGenerateSchedule}
+                onCreateSchedule={handleCreateSchedule}
+                onUpdateSchedule={handleUpdateSchedule}
+                onDeleteSchedule={handleDeleteSchedule}
+                onRefresh={refreshAll}
+              />
+            )}
+            {activeTab === "calendar" && (
+              <CalendarManager
+                holidays={holidays}
+                restDays={restDays}
+                onCreateHoliday={handleCreateHoliday}
+                onDeleteHoliday={handleDeleteHoliday}
+                onCreateRestDay={handleCreateRestDay}
+                onDeleteRestDay={handleDeleteRestDay}
               />
             )}
             {activeTab === "attendance" && (
