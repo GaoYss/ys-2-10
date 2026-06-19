@@ -444,25 +444,22 @@ td small {
   grid-column: 1 / -1;
 }
 
-.risk-warning {
+.risk-warning-inline {
   display: flex;
-  gap: 12px;
+  flex-direction: column;
+  gap: 8px;
   padding: 16px;
-  margin: 16px 20px;
+  margin: 0 20px;
   background: #fff5f5;
   border: 1px solid #ffb8ae;
   border-radius: 8px;
   color: #b42318;
 }
 
-.risk-warning strong {
-  display: block;
-  margin-bottom: 4px;
-}
-
-.risk-warning ul {
-  margin: 0;
-  padding-left: 20px;
+.risk-warning-inline strong {
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .risk-dialog {

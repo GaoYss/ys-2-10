@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { AlertCircle, CalendarPlus, Edit3, Trash2, X } from "lucide-react";
 import { SectionHeader } from "../../components/SectionHeader";
 
@@ -31,6 +31,17 @@ export function CalendarManager({
   const [holidayFormError, setHolidayFormError] = useState("");
   const [editFormError, setEditFormError] = useState("");
   const [restDayFormError, setRestDayFormError] = useState("");
+
+  const addDateConflict = useMemo(() => {
+    if (!holidayDate) return null;
+    return holidays.find((h) => h.date === holidayDate) || null;
+  }, [holidayDate, holidays]);
+
+  const editDateConflict = useMemo(() => {
+    if (!editDate || !editingHoliday) return null;
+    if (editDate === editingHoliday.date) return null;
+    return holidays.find((h) => h.date === editDate) || null;
+  }, [editDate, editingHoliday, holidays]);
 
   async function handleAddHoliday(event) {
     event.preventDefault();
@@ -139,7 +150,13 @@ export function CalendarManager({
                   }}
                   required
                 />
-                {editFormError && (
+                {editDateConflict && (
+                  <span className="field-error">
+                    <AlertCircle size={14} />
+                    该日期已有节假日安排：{editDateConflict.name}
+                  </span>
+                )}
+                {!editDateConflict && editFormError && (
                   <span className="field-error">
                     <AlertCircle size={14} />
                     {editFormError}
@@ -188,7 +205,13 @@ export function CalendarManager({
                 setHolidayFormError("");
               }}
             />
-            {holidayFormError && (
+            {addDateConflict && (
+              <span className="field-error">
+                <AlertCircle size={14} />
+                该日期已有节假日安排：{addDateConflict.name}
+              </span>
+            )}
+            {!addDateConflict && holidayFormError && (
               <span className="field-error">
                 <AlertCircle size={14} />
                 {holidayFormError}

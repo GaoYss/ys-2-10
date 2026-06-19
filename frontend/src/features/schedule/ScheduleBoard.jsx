@@ -213,16 +213,30 @@ export function ScheduleBoard({
             </div>
 
             {riskCheck?.has_risk && (
-              <div className="risk-warning">
-                <AlertTriangle size={20} />
-                <div>
-                  <strong>排课风险提示</strong>
-                  <ul>
-                    {riskCheck.warnings.map((w, i) => (
+              <div className="risk-warning-inline">
+                <AlertTriangle size={18} />
+                <strong>排课风险提示</strong>
+                <ul className="risk-list">
+                  {riskCheck.warnings_detail?.length > 0 ? (
+                    riskCheck.warnings_detail.map((item, i) => (
+                      <li
+                        key={i}
+                        className={`risk-item risk-type-${item.type}`}
+                      >
+                        {item.type === "holiday" || item.type === "rest_day" ? (
+                          <CalendarX size={16} />
+                        ) : (
+                          <AlertCircle size={16} />
+                        )}
+                        <span>{item.message}</span>
+                      </li>
+                    ))
+                  ) : (
+                    riskCheck.warnings.map((w, i) => (
                       <li key={i}>{w}</li>
-                    ))}
-                  </ul>
-                </div>
+                    ))
+                  )}
+                </ul>
               </div>
             )}
 
